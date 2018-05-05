@@ -177,40 +177,6 @@ table(data_balanced_over)
 library(randomForest)
 
 
-##customRF <- list(type = "Classification", library = "randomForest", loop = NULL)
-##customRF$parameters <- data.frame(parameter = c("mtry", "ntree"), class = rep("numeric", 2), label = c("mtry", "ntree"))
-##customRF$grid <- function(x, y, len = NULL, search = "grid") {}
-##customRF$fit <- function(x, y, wts, param, lev, last, weights, classProbs, ...) {
- ## randomForest(x, y, mtry = param$mtry, ntree=param$ntree, ...)
-##}
-##customRF$predict <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
-##  predict(modelFit, newdata)
-##customRF$prob <- function(modelFit, newdata, preProc = NULL, submodels = NULL)
-##  predict(modelFit, newdata, type = "prob")
-##customRF$sort <- function(x) x[order(x[,1]),]
-##customRF$levels <- function(x) x$classes
-
-
-
-
-# train model
-##control <- trainControl(method="repeatedcv", number=10, repeats=3)
-##tunegrid <- expand.grid(.mtry=c(1:15), .ntree=c(1000, 1500, 2000, 2500))
-##seed<-21
-##metric <- "Accuracy"
-##set.seed(seed)
-##custom <- train(Criminal~., data=data_balanced_both, method=customRF, metric=metric, tuneGrid=tunegrid, trControl=control)
-##summary(custom)
-##plot(custom)
-
-##control <- trainControl(method="repeatedcv", number=5, repeats=2, search="grid")
-##set.seed(seed)
-##tunegrid <- expand.grid(.mtry=c(15))
-##rf_gridsearch <- train(Criminal~., data=data_balanced_both, method="rf", metric=metric, tuneGrid=tunegrid, trControl=control)
-##print(rf_gridsearch)
-##plot(rf_gridsearch)
-
-
 fit<- randomForest(Criminal~.,data=data_balanced_both,ntrees = 1500, mtries = 15, max_depth = 10, seed = 21)
 ##fit<- randomForest(Criminal~.,data=data.smote,ntrees = 2500, mtries = 8, max_depth = 10, seed = 21)
 summary(fit)
@@ -237,76 +203,6 @@ train_xgb=xgb.DMatrix(data=as.matrix(train_data[,!(names(train_data) %in% "Crimi
 test_xgb=xgb.DMatrix(data=as.matrix(test_data[,!(names(test_data) %in% "Criminal")]),
                     label=as.matrix(test_data[,names(test_data) %in% "Criminal"]))
 
-
-#xgb.max_mcc <- function(pred,train_xgb) {
-  
- # y_true <- getinfo(train_xgb, "label")
-  
- # DT <- data.table(y_true = y_true, y_prob = pred, key = "y_prob")
-#  cleaner <- !duplicated(DT[, "y_prob"], fromLast = TRUE)
-#  nump <- sum(y_true)
-#  numn <- length(y_true) - nump
-  
-#  DT[, tn_v := as.numeric(cumsum(y_true == 0))]
-#  DT[, fp_v := cumsum(y_true == 1)]
-#  DT[, fn_v := numn - tn_v]
-#  DT[, tp_v := nump - fp_v]
-#  DT <- DT[cleaner, ]
-#  DT[, mcc := (tp_v * tn_v - fp_v * fn_v) / sqrt((tp_v + fp_v) * (tp_v + fn_v) * (tn_v + fp_v) * (tn_v + fn_v))]
-  
-#  best_row <- which.max(DT$mcc)
-  
-#  if (length(best_row) > 0) {
-#    return(list(metric = "mcc", value = DT$mcc[best_row[1]]))
- # } else {
- #   return(list(metric = "mcc", value = -1))
-  }
-  
-}
-
-#xgb.max_kappa <- function(pred, train_xgb) {
-  
- # y_true <- getinfo(train_xgb, "label")
-  
-#  DT <- data.table(y_true = y_true, y_prob = pred, key = "y_prob")
-#  cleaner <- !duplicated(DT[, "y_prob"], fromLast = TRUE)
-#  nump <- sum(y_true)
-#  counter <- length(y_true)
-#  numn <- counter - nump
-  
-#  DT[, tn_v := as.numeric(cumsum(y_true == 0))]
-#  DT[, fp_v := cumsum(y_true == 1)]
-#  DT[, fn_v := numn - tn_v]
-#  DT[, tp_v := nump - fp_v]
- # DT <- DT[cleaner, ]
-  #DT <- DT[, pObs := (tp_v + tn_v) / counter]
-  #DT <- DT[, pExp := (((tp_v + fn_v) * (tp_v + fp_v)) + ((fp_v + tn_v) * (fn_v + tn_v))) / (counter * counter)]
-#  DT <- DT[, kappa := (pObs - pExp) / (1 - pExp)]
-  
- # best_row <- which.max(DT$kappa)
-  
-#  if (length(best_row) > 0) {
- #   return(list(metric = "kappa", value = DT$kappa[best_row[1]]))
-  #} else {
-  #  return(list(metric = "kappa", value = -1))
-  #}
-  
-#}
-
-#set.seed(123)
-#params_list=list("objective"="binary:logistic","eta"=0.1,"max_depth" = 8,"gamma" = 0,"colsample_bytree" = 0.5,'colsample_bylevel'=0.7,'grow_policy'= "lossguide","subsample" = 1.0,"silent" = 1,"min_child_weight" = 0,'max_leaves'= 1400,'scale_pos_weight'=9,'alpha'=4,'tree_method'= "auto")
-
-#xgb_model_params=xgb.cv(data =train_xgb,params = params_list,nrounds = 1000,early_stopping_rounds = 50,nfold = 5 ,feval = xgb.max_kappa ,maximize = T) 
-#xgb.max_mcc(xgb_params_pred, train_xgb)
-
-#nround = 211
-#md <- xgb.train(data=train_xgb, params=params_list, nrounds=nround, nthread=6)
-
-#xgb_params_pred=predict(md,test_xgb)
-#params_xgb=ifelse(xgb_params_pred>0.5,1,0)
-
-
-#confusionMatrix(params_xgb,test_data$Criminal)
 
 # train a model using our training data
 model <- xgboost(data = train_xgb, # the data   
